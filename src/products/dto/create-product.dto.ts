@@ -17,6 +17,6 @@ export class CreateProductDto {
   @IsPositive()
   stock: number;
 
-  @IsString()
-  categoryId: string;
+  @IsNumber()
+  categoryId: number;
 }

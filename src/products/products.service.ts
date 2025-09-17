@@ -34,7 +34,7 @@ export class ProductsService {
     });
   }
 
-  async findOne(id: string): Promise<Product> {
+  async findOne(id: number): Promise<Product> {
     const product = await this.prisma.product.findUnique({
       where: { id },
       include: {
@@ -49,7 +49,7 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto): Promise<Product> {
+  async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
     // Check if product exists
     const existingProduct = await this.prisma.product.findUnique({
       where: { id },
@@ -79,7 +79,7 @@ export class ProductsService {
     });
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: number): Promise<void> {
     const product = await this.prisma.product.findUnique({
       where: { id },
     });

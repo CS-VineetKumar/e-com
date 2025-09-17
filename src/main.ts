@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,9 +13,14 @@ async function bootstrap() {
     transform: true,
   }));
 
+  // Enable response interceptor globally
+  app.useGlobalInterceptors(new ResponseInterceptor());
+
   // Enable CORS
   app.enableCors();
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT || 6060;
+  console.log(`Application is running on port ${port}`);
+  await app.listen(port);
 }
 bootstrap();

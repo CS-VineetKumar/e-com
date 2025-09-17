@@ -13,11 +13,12 @@ describe('RolesGuard', () => {
     getAllAndOverride: jest.fn(),
   };
 
+  const mockGetRequest = jest.fn();
   const mockExecutionContext = {
     getHandler: jest.fn(),
     getClass: jest.fn(),
     switchToHttp: jest.fn().mockReturnValue({
-      getRequest: jest.fn(),
+      getRequest: mockGetRequest,
     }),
   } as unknown as ExecutionContext;
 
@@ -71,7 +72,7 @@ describe('RolesGuard', () => {
       };
 
       mockReflector.getAllAndOverride.mockReturnValue(requiredRoles);
-      mockExecutionContext.switchToHttp().getRequest.mockReturnValue(mockRequest);
+      mockGetRequest.mockReturnValue(mockRequest);
 
       // Act
       const result = guard.canActivate(mockExecutionContext);
@@ -96,7 +97,7 @@ describe('RolesGuard', () => {
       };
 
       mockReflector.getAllAndOverride.mockReturnValue(requiredRoles);
-      mockExecutionContext.switchToHttp().getRequest.mockReturnValue(mockRequest);
+      mockGetRequest.mockReturnValue(mockRequest);
 
       // Act
       const result = guard.canActivate(mockExecutionContext);
@@ -117,7 +118,7 @@ describe('RolesGuard', () => {
       };
 
       mockReflector.getAllAndOverride.mockReturnValue(requiredRoles);
-      mockExecutionContext.switchToHttp().getRequest.mockReturnValue(mockRequest);
+      mockGetRequest.mockReturnValue(mockRequest);
 
       // Act
       const result = guard.canActivate(mockExecutionContext);
@@ -132,7 +133,7 @@ describe('RolesGuard', () => {
       const mockRequest = {};
 
       mockReflector.getAllAndOverride.mockReturnValue(requiredRoles);
-      mockExecutionContext.switchToHttp().getRequest.mockReturnValue(mockRequest);
+      mockGetRequest.mockReturnValue(mockRequest);
 
       // Act
       const result = guard.canActivate(mockExecutionContext);

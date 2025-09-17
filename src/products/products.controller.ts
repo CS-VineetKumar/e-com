@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ValidationPipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -34,7 +35,7 @@ export class ProductsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.productsService.findOne(id);
   }
 
@@ -42,7 +43,7 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body(ValidationPipe) updateProductDto: UpdateProductDto,
   ) {
     return this.productsService.update(id, updateProductDto);
@@ -51,8 +52,8 @@ export class ProductsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
     await this.productsService.remove(id);
-    return { message: 'Product deleted successfully' };
+    return null;
   }
 }
