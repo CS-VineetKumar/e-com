@@ -26,8 +26,9 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  orders Order[]
-  cart   Cart?
+  orders        Order[]
+  cart          Cart?
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -41,6 +42,7 @@ model Category {
 
   // Relations
   products Product[]
+  media    Media[]
 
   @@map("categories")
 }
@@ -59,6 +61,7 @@ model Product {
   category   Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
   cartItems  CartItem[]
+  media      Media[]
 
   @@map("products")
 }
@@ -124,10 +127,55 @@ model CartItem {
   @@map("cart_items")
 }
 
+model Media {
+  id          Int              @id @default(autoincrement())
+  key         String           @unique
+  url         String
+  fileName    String
+  mimeType    String
+  size        Int
+  contextType MediaContextType @default(GENERAL)
+  contextId   Int?
+  metadata    Json?
+  productId   Int?
+  categoryId  Int?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  product  Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([contextType, contextId])
+  @@map("media")
+}
+
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  tokenId   String    @unique
+  tokenHash String
+  userId    Int
+  expiresAt DateTime
+  revoked   Boolean   @default(false)
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
 enum OrderStatus {
   PENDING
   CONFIRMED
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+enum MediaContextType {
+  PRODUCT
+  CATEGORY
+  GENERAL
 }

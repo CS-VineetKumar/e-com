@@ -2,6 +2,7 @@ import { Role } from '../../common/enums/role.enum';
 
 export class AuthResponseDto {
   access_token: string;
+  refresh_token: string;
   user: {
     id: number;
     email: string;

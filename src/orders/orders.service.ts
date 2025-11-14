@@ -5,12 +5,14 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderResponseDto, OrderItemResponseDto } from './dto/order-response.dto';
 import { OrderStatus } from '@prisma/client';
+import { OrdersJobsService } from '../jobs/orders-jobs.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private cartService: CartService,
+    private ordersJobsService: OrdersJobsService,
   ) {}
 
   async createOrder(userId: number, createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
@@ -43,7 +45,7 @@ export class OrdersService {
         },
       });
 
-      // Create order items and update product stock
+      // Create order items
       const orderItems: any[] = [];
       for (const cartItem of cart.cartItems) {
         // Create order item
@@ -63,16 +65,6 @@ export class OrdersService {
           },
         });
 
-        // Update product stock
-        await tx.product.update({
-          where: { id: cartItem.product.id },
-          data: {
-            stock: {
-              decrement: cartItem.quantity,
-            },
-          },
-        });
-
         orderItems.push(orderItem);
       }
 
@@ -83,6 +75,8 @@ export class OrdersService {
 
       return { ...newOrder, orderItems };
     });
+
+    await this.ordersJobsService.enqueueInventoryAdjustment(order.id);
 
     return this.formatOrderResponse(order);
   }
@@ -228,7 +222,9 @@ export class OrdersService {
       throw new BadRequestException('Only pending orders can be cancelled');
     }
 
-    // Cancel order and restore stock in a transaction
+    await this.ordersJobsService.cancelPendingJobs(orderId);
+
+    // Cancel order
     const cancelledOrder = await this.prisma.$transaction(async (tx) => {
       // Update order status
       const updatedOrder = await tx.order.update({
@@ -246,18 +242,6 @@ export class OrdersService {
           },
         },
       });
-
-      // Restore product stock
-      for (const orderItem of order.orderItems) {
-        await tx.product.update({
-          where: { id: orderItem.product.id },
-          data: {
-            stock: {
-              increment: orderItem.quantity,
-            },
-          },
-        });
-      }
 
       return updatedOrder;
     });
