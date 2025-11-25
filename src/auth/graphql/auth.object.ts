@@ -24,7 +24,7 @@ export class AuthResponseObject {
   @Field()
   access_token: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   refresh_token?: string;
 
   @Field(() => UserObject)

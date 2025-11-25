@@ -8,7 +8,7 @@ export class CreateProductInput {
   @MinLength(1)
   name: string;
 
-  @Field({ nullable: true })
+  @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
   description?: string;

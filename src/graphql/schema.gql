@@ -1,0 +1,84 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthResponseObject {
+  access_token: String!
+  refresh_token: String
+  user: UserObject!
+}
+
+type CategoryObject {
+  createdAt: DateTime!
+  description: String
+  id: Int!
+  name: String!
+  updatedAt: DateTime!
+}
+
+input CreateProductInput {
+  categoryId: Int!
+  description: String
+  name: String!
+  price: Float!
+  stock: Int!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Mutation {
+  createProduct(input: CreateProductInput!): ProductObject!
+  deleteProduct(id: Int!): Boolean!
+  login(input: LoginInput!): AuthResponseObject!
+  register(input: RegisterInput!): AuthResponseObject!
+  updateProduct(id: Int!, input: UpdateProductInput!): ProductObject!
+}
+
+type ProductObject {
+  category: CategoryObject
+  categoryId: Int!
+  createdAt: DateTime!
+  description: String
+  id: Int!
+  name: String!
+  price: Float!
+  stock: Int!
+  updatedAt: DateTime!
+}
+
+type Query {
+  me: UserObject
+  product(id: Int!): ProductObject!
+  products: [ProductObject!]!
+}
+
+input RegisterInput {
+  email: String!
+  firstName: String!
+  lastName: String!
+  password: String!
+}
+
+input UpdateProductInput {
+  categoryId: Int
+  description: String
+  name: String
+  price: Float
+  stock: Int
+}
+
+type UserObject {
+  email: String!
+  firstName: String!
+  id: Float!
+  lastName: String!
+  role: String!
+}
