@@ -6,7 +6,6 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -50,7 +49,7 @@ export class UploadsController {
   )
   async uploadImage(
     @UploadedFile() file: Express.Multer.File | undefined,
-    @Body(ValidationPipe) uploadDto: UploadImageDto,
+    @Body() uploadDto: UploadImageDto,
   ) {
     return this.uploadsService.uploadImage(file, uploadDto);
   }

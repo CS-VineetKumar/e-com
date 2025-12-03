@@ -7,7 +7,6 @@ import {
   Body,
   Param,
   UseGuards,
-  ValidationPipe,
   ParseIntPipe,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
@@ -22,36 +21,32 @@ import { Role } from '../common/enums/role.enum';
 import type { User } from '@prisma/client';
 
 @Controller('orders')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  @UseGuards(RolesGuard)
   @Roles(Role.CUSTOMER)
   async createOrder(
     @CurrentUser() user: User,
-    @Body(ValidationPipe) createOrderDto: CreateOrderDto,
+    @Body() createOrderDto: CreateOrderDto,
   ): Promise<OrderResponseDto> {
     return this.ordersService.createOrder(user.id, createOrderDto);
   }
 
   @Get()
-  @UseGuards(RolesGuard)
   @Roles(Role.CUSTOMER)
   async getUserOrders(@CurrentUser() user: User): Promise<OrderResponseDto[]> {
     return this.ordersService.getUserOrders(user.id);
   }
 
   @Get('all')
-  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   async getAllOrders(): Promise<OrderResponseDto[]> {
     return this.ordersService.getAllOrders();
   }
 
   @Get(':id')
-  @UseGuards(RolesGuard)
   @Roles(Role.CUSTOMER)
   async getOrderById(
     @CurrentUser() user: User,
@@ -61,17 +56,15 @@ export class OrdersController {
   }
 
   @Patch(':id/status')
-  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   async updateOrderStatus(
     @Param('id', ParseIntPipe) orderId: number,
-    @Body(ValidationPipe) updateOrderStatusDto: UpdateOrderStatusDto,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
   ): Promise<OrderResponseDto> {
     return this.ordersService.updateOrderStatus(orderId, updateOrderStatusDto);
   }
 
   @Delete(':id/cancel')
-  @UseGuards(RolesGuard)
   @Roles(Role.CUSTOMER)
   async cancelOrder(
     @CurrentUser() user: User,

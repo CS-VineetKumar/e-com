@@ -4,7 +4,7 @@ import { CartService } from '../cart/cart.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { OrderResponseDto, OrderItemResponseDto } from './dto/order-response.dto';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus, Prisma } from '@prisma/client';
 import { OrdersJobsService } from '../jobs/orders-jobs.service';
 
 @Injectable()
@@ -46,10 +46,8 @@ export class OrdersService {
       });
 
       // Create order items
-      const orderItems: any[] = [];
-      for (const cartItem of cart.cartItems) {
-        // Create order item
-        const orderItem = await tx.orderItem.create({
+      const orderItemsPromises = cart.cartItems.map((cartItem) =>
+        tx.orderItem.create({
           data: {
             orderId: newOrder.id,
             productId: cartItem.product.id,
@@ -63,10 +61,10 @@ export class OrdersService {
               },
             },
           },
-        });
+        })
+      );
 
-        orderItems.push(orderItem);
-      }
+      const orderItems = await Promise.all(orderItemsPromises);
 
       // Clear cart
       await tx.cartItem.deleteMany({
@@ -265,8 +263,24 @@ export class OrdersService {
     }
   }
 
-  private formatOrderResponse(order: any): OrderResponseDto {
-    const orderItems: OrderItemResponseDto[] = order.orderItems.map((item: any) => ({
+  private formatOrderResponse(order: {
+    id: number;
+    userId: number;
+    status: OrderStatus;
+    total: Prisma.Decimal | number;
+    shippingAddress: string | null;
+    billingAddress: string | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    orderItems: Array<{
+      id: number;
+      quantity: number;
+      price: Prisma.Decimal | number;
+      product: any;
+    }>;
+  }): OrderResponseDto {
+    const orderItems: OrderItemResponseDto[] = order.orderItems.map((item) => ({
       id: item.id,
       quantity: item.quantity,
       price: Number(item.price),
@@ -278,9 +292,9 @@ export class OrdersService {
       userId: order.userId,
       status: order.status,
       total: Number(order.total),
-      shippingAddress: order.shippingAddress,
-      billingAddress: order.billingAddress,
-      notes: order.notes,
+      shippingAddress: order.shippingAddress ?? undefined,
+      billingAddress: order.billingAddress ?? undefined,
+      notes: order.notes ?? undefined,
       orderItems,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,

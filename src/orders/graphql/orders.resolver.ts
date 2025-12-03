@@ -40,18 +40,9 @@ export class OrdersResolver {
     const userId = context.req.user.userId;
     const userRole = context.req.user.role;
 
-    // Admin can see any order, customers can only see their own
-    if (userRole === Role.ADMIN) {
-      const orders = await this.ordersService.getAllOrders();
-      const order = orders.find(o => o.id === id);
-      if (!order) {
-        throw new Error('Order not found');
-      }
-      return this.formatOrderForGraphQL(order);
-    } else {
-      const order = await this.ordersService.getOrderById(userId, id);
-      return this.formatOrderForGraphQL(order);
-    }
+    // Use the service method which handles role-based access
+    const order = await this.ordersService.getOrderById(userId, id);
+    return this.formatOrderForGraphQL(order);
   }
 
   @Mutation(() => OrderObject)

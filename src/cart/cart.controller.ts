@@ -7,7 +7,6 @@ import {
   Body,
   Param,
   UseGuards,
-  ValidationPipe,
   ParseIntPipe,
 } from '@nestjs/common';
 import { CartService } from './cart.service';
@@ -35,7 +34,7 @@ export class CartController {
   @Post('add')
   async addToCart(
     @CurrentUser() user: User,
-    @Body(ValidationPipe) addToCartDto: AddToCartDto,
+    @Body() addToCartDto: AddToCartDto,
   ): Promise<CartResponseDto> {
     return this.cartService.addToCart(user.id, addToCartDto);
   }
@@ -44,7 +43,7 @@ export class CartController {
   async updateCartItem(
     @CurrentUser() user: User,
     @Param('id', ParseIntPipe) cartItemId: number,
-    @Body(ValidationPipe) updateCartItemDto: UpdateCartItemDto,
+    @Body() updateCartItemDto: UpdateCartItemDto,
   ): Promise<CartResponseDto> {
     return this.cartService.updateCartItem(user.id, cartItemId, updateCartItemDto);
   }

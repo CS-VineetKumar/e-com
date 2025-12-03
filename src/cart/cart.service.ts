@@ -60,38 +60,12 @@ export class CartService {
       throw new BadRequestException('Insufficient stock available');
     }
 
-    // Get or create cart
-    let cart = await this.prisma.cart.findUnique({
+    // Get user's cart (ensuring it exists first)
+    const cart = await this.prisma.cart.upsert({
       where: { userId },
-      include: {
-        cartItems: {
-          include: {
-            product: {
-              include: {
-                category: true,
-              },
-            },
-          },
-        },
-      },
+      create: { userId },
+      update: {},
     });
-
-    if (!cart) {
-      cart = await this.prisma.cart.create({
-        data: { userId },
-        include: {
-          cartItems: {
-            include: {
-              product: {
-                include: {
-                  category: true,
-                },
-              },
-            },
-          },
-        },
-      });
-    }
 
     // Check if item already exists in cart
     const existingCartItem = await this.prisma.cartItem.findUnique({
@@ -203,8 +177,23 @@ export class CartService {
     return this.getOrCreateCart(userId);
   }
 
-  private formatCartResponse(cart: any): CartResponseDto {
-    const cartItems: CartItemResponseDto[] = cart.cartItems.map((item: any) => ({
+  private formatCartResponse(cart: {
+    id: number;
+    userId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    cartItems: Array<{
+      id: number;
+      quantity: number;
+      createdAt: Date;
+      updatedAt: Date;
+      product: {
+        price: number;
+        [key: string]: unknown;
+      };
+    }>;
+  }): CartResponseDto {
+    const cartItems: CartItemResponseDto[] = cart.cartItems.map((item) => ({
       id: item.id,
       quantity: item.quantity,
       product: item.product,

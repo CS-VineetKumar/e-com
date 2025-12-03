@@ -50,15 +50,6 @@ export class ProductsService {
   }
 
   async update(id: number, updateProductDto: UpdateProductDto): Promise<Product> {
-    // Check if product exists
-    const existingProduct = await this.prisma.product.findUnique({
-      where: { id },
-    });
-
-    if (!existingProduct) {
-      throw new NotFoundException('Product not found');
-    }
-
     // If categoryId is being updated, check if category exists
     if (updateProductDto.categoryId) {
       const category = await this.prisma.category.findUnique({
@@ -70,26 +61,26 @@ export class ProductsService {
       }
     }
 
-    return this.prisma.product.update({
-      where: { id },
-      data: updateProductDto,
-      include: {
-        category: true,
-      },
-    });
+    try {
+      return await this.prisma.product.update({
+        where: { id },
+        data: updateProductDto,
+        include: {
+          category: true,
+        },
+      });
+    } catch (error) {
+      throw new NotFoundException('Product not found');
+    }
   }
 
   async remove(id: number): Promise<void> {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
-    });
-
-    if (!product) {
+    try {
+      await this.prisma.product.delete({
+        where: { id },
+      });
+    } catch (error) {
       throw new NotFoundException('Product not found');
     }
-
-    await this.prisma.product.delete({
-      where: { id },
-    });
   }
 }

@@ -6,6 +6,11 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { AssignTicketDto } from './dto/assign-ticket.dto';
 import { Ticket, TicketStatus, TicketComment } from '@prisma/client';
 import { Role } from '../common/enums/role.enum';
+import { 
+  FULL_TICKET_INCLUDE, 
+  FULL_TICKET_INCLUDE_NO_INTERNAL,
+  USER_SELECT 
+} from '../common/constants/prisma-selects';
 
 @Injectable()
 export class SupportService {
@@ -37,44 +42,7 @@ export class SupportService {
         ...createTicketDto,
         createdById: userId,
       },
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        order: true,
-        product: true,
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-      },
+      include: FULL_TICKET_INCLUDE,
     });
   }
 
@@ -82,44 +50,7 @@ export class SupportService {
     // Admin and Support Agents can see all tickets
     if (userRole === Role.ADMIN || userRole === Role.SUPPORT_AGENT) {
       return this.prisma.ticket.findMany({
-        include: {
-          createdBy: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              role: true,
-            },
-          },
-          assignedTo: {
-            select: {
-              id: true,
-              email: true,
-              firstName: true,
-              lastName: true,
-              role: true,
-            },
-          },
-          order: true,
-          product: true,
-          comments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  email: true,
-                  firstName: true,
-                  lastName: true,
-                  role: true,
-                },
-              },
-            },
-            orderBy: {
-              createdAt: 'asc',
-            },
-          },
-        },
+        include: FULL_TICKET_INCLUDE,
         orderBy: {
           createdAt: 'desc',
         },
@@ -131,47 +62,7 @@ export class SupportService {
       where: {
         createdById: userId,
       },
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        order: true,
-        product: true,
-        comments: {
-          where: {
-            isInternal: false, // Hide internal comments from customers
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-      },
+      include: FULL_TICKET_INCLUDE_NO_INTERNAL,
       orderBy: {
         createdAt: 'desc',
       },
@@ -181,44 +72,7 @@ export class SupportService {
   async findOne(ticketId: number, userId: number, userRole: Role): Promise<Ticket> {
     const ticket = await this.prisma.ticket.findUnique({
       where: { id: ticketId },
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        order: true,
-        product: true,
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-      },
+      include: FULL_TICKET_INCLUDE,
     });
 
     if (!ticket) {
@@ -285,44 +139,7 @@ export class SupportService {
     return this.prisma.ticket.update({
       where: { id: ticketId },
       data: updateData,
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        order: true,
-        product: true,
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-      },
+      include: FULL_TICKET_INCLUDE,
     });
   }
 
@@ -359,44 +176,7 @@ export class SupportService {
         assignedToId: assignTicketDto.assignedToId,
         status: ticket.status === TicketStatus.OPEN ? TicketStatus.IN_PROGRESS : ticket.status,
       },
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        order: true,
-        product: true,
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-      },
+      include: FULL_TICKET_INCLUDE,
     });
   }
 
@@ -425,13 +205,7 @@ export class SupportService {
       },
       include: {
         user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
+          select: USER_SELECT,
         },
       },
     });
@@ -461,44 +235,7 @@ export class SupportService {
       where: {
         assignedToId: userId,
       },
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-            role: true,
-          },
-        },
-        order: true,
-        product: true,
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                email: true,
-                firstName: true,
-                lastName: true,
-                role: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'asc',
-          },
-        },
-      },
+      include: FULL_TICKET_INCLUDE,
       orderBy: {
         createdAt: 'desc',
       },
