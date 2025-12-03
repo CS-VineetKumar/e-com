@@ -11,12 +11,15 @@ import { CategoriesModule } from './categories/categories.module';
 import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { CacheModule } from './cache/cache.module';
+import { SupportModule } from './support/support.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CacheModule,
     GraphQLModule,
     PrismaModule,
     AuthModule,
@@ -26,6 +29,7 @@ import { UploadsModule } from './uploads/uploads.module';
     CartModule,
     OrdersModule,
     UploadsModule,
+    SupportModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ProductObject } from '../../products/graphql/product.object';
 
 @ObjectType()
 export class CategoryObject {
@@ -16,5 +17,8 @@ export class CategoryObject {
 
   @Field()
   updatedAt: Date;
+
+  @Field(() => [ProductObject], { nullable: true })
+  products?: ProductObject[];
 }
 

@@ -35,4 +35,36 @@ export class CategoriesService {
       data: createCategoryDto,
     });
   }
+
+  async update(id: number, updateCategoryDto: Partial<CategoryDto>): Promise<Category> {
+    const existingCategory = await this.prisma.category.findUnique({
+      where: { id },
+    });
+
+    if (!existingCategory) {
+      throw new NotFoundException('Category not found');
+    }
+
+    return this.prisma.category.update({
+      where: { id },
+      data: updateCategoryDto,
+      include: {
+        products: true,
+      },
+    });
+  }
+
+  async remove(id: number): Promise<void> {
+    const category = await this.prisma.category.findUnique({
+      where: { id },
+    });
+
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
+    await this.prisma.category.delete({
+      where: { id },
+    });
+  }
 }

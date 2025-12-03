@@ -1,5 +1,5 @@
 import { Resolver, Query, Mutation, Args, Int, Context } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, UseInterceptors } from '@nestjs/common';
 import { ProductsService } from '../products.service';
 import { ProductObject } from './product.object';
 import { CreateProductInput } from './dto/create-product.input';
@@ -8,8 +8,10 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
+import { GraphQLCacheInterceptor } from '../../cache/graphql-cache.interceptor';
 
 @Resolver(() => ProductObject)
+@UseInterceptors(GraphQLCacheInterceptor)
 export class ProductsResolver {
   constructor(private readonly productsService: ProductsService) {}
 

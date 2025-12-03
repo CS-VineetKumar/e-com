@@ -13,6 +13,8 @@ datasource db {
 enum Role {
   CUSTOMER
   ADMIN
+  SELLER
+  SUPPORT_AGENT
 }
 
 model User {
@@ -26,9 +28,12 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  orders        Order[]
-  cart          Cart?
-  refreshTokens RefreshToken[]
+  orders          Order[]
+  cart            Cart?
+  refreshTokens   RefreshToken[]
+  createdTickets  Ticket[]        @relation("TicketCreator")
+  assignedTickets Ticket[]        @relation("TicketAssignee")
+  ticketComments  TicketComment[]
 
   @@map("users")
 }
@@ -62,6 +67,7 @@ model Product {
   orderItems OrderItem[]
   cartItems  CartItem[]
   media      Media[]
+  tickets    Ticket[]
 
   @@map("products")
 }
@@ -80,6 +86,7 @@ model Order {
   // Relations
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
+  tickets    Ticket[]
 
   @@map("orders")
 }
@@ -178,4 +185,78 @@ enum MediaContextType {
   PRODUCT
   CATEGORY
   GENERAL
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_CUSTOMER
+  WAITING_FOR_AGENT
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketCategory {
+  GENERAL
+  ORDER_ISSUE
+  PRODUCT_INQUIRY
+  PAYMENT_ISSUE
+  TECHNICAL_SUPPORT
+  ACCOUNT_ISSUE
+  REFUND_REQUEST
+  OTHER
+}
+
+model Ticket {
+  id           Int            @id @default(autoincrement())
+  title        String
+  description  String
+  status       TicketStatus   @default(OPEN)
+  priority     TicketPriority @default(MEDIUM)
+  category     TicketCategory @default(GENERAL)
+  createdById  Int
+  assignedToId Int?
+  orderId      Int?
+  productId    Int?
+  closedAt     DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  // Relations
+  createdBy  User            @relation("TicketCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  assignedTo User?           @relation("TicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  order      Order?          @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  product    Product?        @relation(fields: [productId], references: [id], onDelete: SetNull)
+  comments   TicketComment[]
+
+  @@index([createdById])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([priority])
+  @@map("tickets")
+}
+
+model TicketComment {
+  id         Int      @id @default(autoincrement())
+  ticketId   Int
+  userId     Int
+  comment    String   @db.Text
+  isInternal Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([userId])
+  @@map("ticket_comments")
 }
