@@ -17,12 +17,20 @@ export class CategoriesResolver {
 
   @Query(() => [CategoryObject], { name: 'categories' })
   async findAll(): Promise<CategoryObject[]> {
-    return this.categoriesService.findAll();
+    const categories = await this.categoriesService.findAll();
+    return categories.map(cat => ({
+      ...cat,
+      description: cat.description ?? undefined,
+    }));
   }
 
   @Query(() => CategoryObject, { name: 'category' })
   async findOne(@Args('id', { type: () => Int }) id: number): Promise<CategoryObject> {
-    return this.categoriesService.findOne(id);
+    const category = await this.categoriesService.findOne(id);
+    return {
+      ...category,
+      description: category.description ?? undefined,
+    };
   }
 
   @Mutation(() => CategoryObject)
@@ -31,7 +39,11 @@ export class CategoriesResolver {
   async createCategory(
     @Args('input') createCategoryInput: CreateCategoryInput,
   ): Promise<CategoryObject> {
-    return this.categoriesService.create(createCategoryInput);
+    const category = await this.categoriesService.create(createCategoryInput);
+    return {
+      ...category,
+      description: category.description ?? undefined,
+    };
   }
 
   @Mutation(() => CategoryObject)
@@ -41,7 +53,11 @@ export class CategoriesResolver {
     @Args('id', { type: () => Int }) id: number,
     @Args('input') updateCategoryInput: UpdateCategoryInput,
   ): Promise<CategoryObject> {
-    return this.categoriesService.update(id, updateCategoryInput);
+    const category = await this.categoriesService.update(id, updateCategoryInput);
+    return {
+      ...category,
+      description: category.description ?? undefined,
+    };
   }
 
   @Mutation(() => Boolean)

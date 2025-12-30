@@ -177,26 +177,16 @@ export class CartService {
     return this.getOrCreateCart(userId);
   }
 
-  private formatCartResponse(cart: {
-    id: number;
-    userId: number;
-    createdAt: Date;
-    updatedAt: Date;
-    cartItems: Array<{
-      id: number;
-      quantity: number;
-      createdAt: Date;
-      updatedAt: Date;
-      product: {
-        price: number;
-        [key: string]: unknown;
-      };
-    }>;
-  }): CartResponseDto {
-    const cartItems: CartItemResponseDto[] = cart.cartItems.map((item) => ({
+  private formatCartResponse(cart: any): CartResponseDto {
+    const cartItems: CartItemResponseDto[] = cart.cartItems.map((item: any) => ({
       id: item.id,
       quantity: item.quantity,
-      product: item.product,
+      product: {
+        ...item.product,
+        price: typeof item.product.price === 'object' && item.product.price !== null
+          ? Number(item.product.price)
+          : item.product.price,
+      },
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
     }));

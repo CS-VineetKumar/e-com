@@ -22,7 +22,8 @@ export class SupportResolver {
   async findAll(@Context() context: { req: { user: { userId: number; role: Role } } }): Promise<TicketObject[]> {
     const userId = context.req.user.userId;
     const userRole = context.req.user.role;
-    return this.supportService.findAll(userRole, userId);
+    const tickets = await this.supportService.findAll(userRole, userId);
+    return tickets.map(ticket => this.transformTicket(ticket));
   }
 
   @Query(() => [TicketObject], { name: 'myAssignedTickets' })
@@ -30,7 +31,8 @@ export class SupportResolver {
   @Roles(Role.SUPPORT_AGENT, Role.ADMIN)
   async getMyAssignedTickets(@Context() context: { req: { user: { userId: number } } }): Promise<TicketObject[]> {
     const userId = context.req.user.userId;
-    return this.supportService.getMyAssignedTickets(userId);
+    const tickets = await this.supportService.getMyAssignedTickets(userId);
+    return tickets.map(ticket => this.transformTicket(ticket));
   }
 
   @Query(() => TicketObject, { name: 'ticket' })
@@ -41,7 +43,8 @@ export class SupportResolver {
   ): Promise<TicketObject> {
     const userId = context.req.user.userId;
     const userRole = context.req.user.role;
-    return this.supportService.findOne(id, userId, userRole);
+    const ticket = await this.supportService.findOne(id, userId, userRole);
+    return this.transformTicket(ticket);
   }
 
   @Mutation(() => TicketObject)
@@ -51,7 +54,8 @@ export class SupportResolver {
     @Context() context: { req: { user: { userId: number } } },
   ): Promise<TicketObject> {
     const userId = context.req.user.userId;
-    return this.supportService.createTicket(userId, createTicketInput);
+    const ticket = await this.supportService.createTicket(userId, createTicketInput);
+    return this.transformTicket(ticket);
   }
 
   @Mutation(() => TicketObject)
@@ -63,7 +67,8 @@ export class SupportResolver {
   ): Promise<TicketObject> {
     const userId = context.req.user.userId;
     const userRole = context.req.user.role;
-    return this.supportService.updateTicket(id, updateTicketInput, userId, userRole);
+    const ticket = await this.supportService.updateTicket(id, updateTicketInput, userId, userRole);
+    return this.transformTicket(ticket);
   }
 
   @Mutation(() => TicketObject)
@@ -73,7 +78,8 @@ export class SupportResolver {
     @Args('id', { type: () => Int }) id: number,
     @Args('input') assignTicketInput: AssignTicketInput,
   ): Promise<TicketObject> {
-    return this.supportService.assignTicket(id, assignTicketInput);
+    const ticket = await this.supportService.assignTicket(id, assignTicketInput);
+    return this.transformTicket(ticket);
   }
 
   @Mutation(() => TicketCommentObject)
@@ -85,7 +91,36 @@ export class SupportResolver {
   ): Promise<TicketCommentObject> {
     const userId = context.req.user.userId;
     const userRole = context.req.user.role;
-    return this.supportService.addComment(ticketId, createCommentInput, userId, userRole);
+    const comment = await this.supportService.addComment(ticketId, createCommentInput, userId, userRole) as any;
+    return {
+      ...comment,
+      user: comment.user,
+    };
+  }
+
+  private transformTicket(ticket: any): TicketObject {
+    return {
+      ...ticket,
+      assignedToId: ticket.assignedToId ?? undefined,
+      orderId: ticket.orderId ?? undefined,
+      productId: ticket.productId ?? undefined,
+      closedAt: ticket.closedAt ?? undefined,
+      createdBy: ticket.createdBy as any,
+      assignedTo: ticket.assignedTo ?? undefined,
+      order: ticket.order ?? undefined,
+      product: ticket.product ? {
+        id: ticket.product.id,
+        name: ticket.product.name,
+        description: ticket.product.description ?? undefined,
+        price: typeof ticket.product.price === 'object' && ticket.product.price !== null
+          ? Number(ticket.product.price)
+          : ticket.product.price,
+      } : undefined,
+      comments: (ticket.comments || []).map((comment: any) => ({
+        ...comment,
+        user: comment.user as any,
+      })),
+    };
   }
 
   @Mutation(() => Boolean)

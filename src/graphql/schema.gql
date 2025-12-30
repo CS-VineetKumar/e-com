@@ -2,6 +2,10 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AssignTicketInput {
+  assignedToId: Int!
+}
+
 type AuthResponseObject {
   access_token: String!
   refresh_token: String
@@ -13,7 +17,24 @@ type CategoryObject {
   description: String
   id: Int!
   name: String!
+  products: [ProductObject!]
   updatedAt: DateTime!
+}
+
+input CreateCategoryInput {
+  description: String
+  name: String!
+}
+
+input CreateCommentInput {
+  comment: String!
+  isInternal: Boolean
+}
+
+input CreateOrderInput {
+  billingAddress: String
+  notes: String
+  shippingAddress: String
 }
 
 input CreateProductInput {
@@ -22,6 +43,15 @@ input CreateProductInput {
   name: String!
   price: Float!
   stock: Int!
+}
+
+input CreateTicketInput {
+  category: String
+  description: String!
+  orderId: Int
+  priority: String
+  productId: Int
+  title: String!
 }
 
 """
@@ -35,11 +65,61 @@ input LoginInput {
 }
 
 type Mutation {
+  addTicketComment(input: CreateCommentInput!, ticketId: Int!): TicketCommentObject!
+  assignTicket(id: Int!, input: AssignTicketInput!): TicketObject!
+  cancelOrder(id: Int!): OrderObject!
+  createCategory(input: CreateCategoryInput!): CategoryObject!
+  createOrder(input: CreateOrderInput!): OrderObject!
   createProduct(input: CreateProductInput!): ProductObject!
+  createTicket(input: CreateTicketInput!): TicketObject!
+  deleteCategory(id: Int!): Boolean!
   deleteProduct(id: Int!): Boolean!
+  deleteTicket(id: Int!): Boolean!
   login(input: LoginInput!): AuthResponseObject!
   register(input: RegisterInput!): AuthResponseObject!
+  updateCategory(id: Int!, input: UpdateCategoryInput!): CategoryObject!
+  updateOrderStatus(id: Int!, input: UpdateOrderStatusInput!): OrderObject!
   updateProduct(id: Int!, input: UpdateProductInput!): ProductObject!
+  updateTicket(id: Int!, input: UpdateTicketInput!): TicketObject!
+}
+
+type OrderItemObject {
+  id: Int!
+  orderId: Int!
+  price: Float!
+  product: ProductObjectForOrder!
+  productId: Int!
+  quantity: Int!
+}
+
+type OrderObject {
+  billingAddress: String
+  createdAt: DateTime!
+  id: Int!
+  notes: String
+  orderItems: [OrderItemObject!]!
+  shippingAddress: String
+  status: OrderStatus!
+  total: Float!
+  updatedAt: DateTime!
+  user: UserObjectForOrder
+  userId: Int!
+}
+
+type OrderObjectForTicket {
+  id: Int!
+  status: String!
+  total: Float!
+  userId: Int!
+}
+
+"""The status of an order"""
+enum OrderStatus {
+  CANCELLED
+  CONFIRMED
+  DELIVERED
+  PENDING
+  SHIPPED
 }
 
 type ProductObject {
@@ -54,10 +134,34 @@ type ProductObject {
   updatedAt: DateTime!
 }
 
+type ProductObjectForOrder {
+  categoryId: Int!
+  description: String
+  id: Int!
+  name: String!
+  price: Float!
+  stock: Int!
+}
+
+type ProductObjectForTicket {
+  description: String
+  id: Int!
+  name: String!
+  price: Float!
+}
+
 type Query {
+  categories: [CategoryObject!]!
+  category(id: Int!): CategoryObject!
   me: UserObject
+  myAssignedTickets: [TicketObject!]!
+  myOrders: [OrderObject!]!
+  order(id: Int!): OrderObject!
+  orders: [OrderObject!]!
   product(id: Int!): ProductObject!
   products: [ProductObject!]!
+  ticket(id: Int!): TicketObject!
+  tickets: [TicketObject!]!
 }
 
 input RegisterInput {
@@ -65,6 +169,77 @@ input RegisterInput {
   firstName: String!
   lastName: String!
   password: String!
+}
+
+"""The category of the ticket"""
+enum TicketCategory {
+  ACCOUNT_ISSUE
+  GENERAL
+  ORDER_ISSUE
+  OTHER
+  PAYMENT_ISSUE
+  PRODUCT_INQUIRY
+  REFUND_REQUEST
+  TECHNICAL_SUPPORT
+}
+
+type TicketCommentObject {
+  comment: String!
+  createdAt: DateTime!
+  id: Int!
+  isInternal: Boolean!
+  ticketId: Int!
+  updatedAt: DateTime!
+  user: UserObjectForTicket!
+  userId: Int!
+}
+
+type TicketObject {
+  assignedTo: UserObjectForTicket
+  assignedToId: Int
+  category: TicketCategory!
+  closedAt: DateTime
+  comments: [TicketCommentObject!]!
+  createdAt: DateTime!
+  createdBy: UserObjectForTicket!
+  createdById: Int!
+  description: String!
+  id: Int!
+  order: OrderObjectForTicket
+  orderId: Int
+  priority: TicketPriority!
+  product: ProductObjectForTicket
+  productId: Int
+  status: TicketStatus!
+  title: String!
+  updatedAt: DateTime!
+}
+
+"""The priority level of a ticket"""
+enum TicketPriority {
+  HIGH
+  LOW
+  MEDIUM
+  URGENT
+}
+
+"""The status of a support ticket"""
+enum TicketStatus {
+  CLOSED
+  IN_PROGRESS
+  OPEN
+  RESOLVED
+  WAITING_FOR_AGENT
+  WAITING_FOR_CUSTOMER
+}
+
+input UpdateCategoryInput {
+  description: String
+  name: String
+}
+
+input UpdateOrderStatusInput {
+  status: String!
 }
 
 input UpdateProductInput {
@@ -75,10 +250,34 @@ input UpdateProductInput {
   stock: Int
 }
 
+input UpdateTicketInput {
+  assignedToId: Int
+  category: String
+  description: String
+  priority: String
+  status: String
+  title: String
+}
+
 type UserObject {
   email: String!
   firstName: String!
   id: Float!
+  lastName: String!
+  role: String!
+}
+
+type UserObjectForOrder {
+  email: String!
+  firstName: String!
+  id: Int!
+  lastName: String!
+}
+
+type UserObjectForTicket {
+  email: String!
+  firstName: String!
+  id: Int!
   lastName: String!
   role: String!
 }

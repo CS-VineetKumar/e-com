@@ -3,7 +3,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { Observable, of } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { CACHE_MANAGER } from '@nestjs/common/cache';
-import { Cache } from 'cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class GraphQLCacheInterceptor implements NestInterceptor {

@@ -8,27 +8,6 @@ registerEnumType(OrderStatus, {
 });
 
 @ObjectType()
-export class OrderItemObject {
-  @Field(() => Int)
-  id: number;
-
-  @Field(() => Int)
-  orderId: number;
-
-  @Field(() => Int)
-  productId: number;
-
-  @Field(() => Int)
-  quantity: number;
-
-  @Field(() => Float)
-  price: number;
-
-  @Field(() => ProductObjectForOrder)
-  product: ProductObjectForOrder;
-}
-
-@ObjectType()
 export class ProductObjectForOrder {
   @Field(() => Int)
   id: number;
@@ -47,6 +26,27 @@ export class ProductObjectForOrder {
 
   @Field(() => Int)
   categoryId: number;
+}
+
+@ObjectType()
+export class OrderItemObject {
+  @Field(() => Int)
+  id: number;
+
+  @Field(() => Int)
+  orderId: number;
+
+  @Field(() => Int)
+  productId: number;
+
+  @Field(() => Int)
+  quantity: number;
+
+  @Field(() => Float)
+  price: number;
+
+  @Field(() => ProductObjectForOrder)
+  product: ProductObjectForOrder;
 }
 
 @ObjectType()
